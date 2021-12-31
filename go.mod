@@ -1,3 +1,5 @@
-module generate
+module github.com/RomaBiliak/generate-openapi-go-server
 
 go 1.17
+
+require github.com/gorilla/mux v1.8.0
