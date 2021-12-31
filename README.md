@@ -1,0 +1,1 @@
+# generate-openapi-go-server
