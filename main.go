@@ -10,19 +10,55 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/joho/godotenv"
+
+	"github.com/RomaBiliak/generate-openapi-go-server/database/dbs"
 	"github.com/RomaBiliak/generate-openapi-go-server/openapi"
+	"github.com/RomaBiliak/generate-openapi-go-server/pkg/database/postgres"
 )
 
 func main() {
 	log.Printf("Server started")
 
-	ItemApiService := openapi.NewItemApiService()
+	godotenv.Load()
+
+	pgUser, ok := os.LookupEnv("PG_USER")
+	if !ok {
+		panic(errors.New("PG_USER is empty"))
+	}
+	pgPassword, ok := os.LookupEnv("PG_PASSWORD")
+	if !ok {
+		panic(errors.New("PG_PASSWORD is empty"))
+	}
+	pgHost, ok := os.LookupEnv("PG_HOST")
+	if !ok {
+		panic(errors.New("Db Host is empty"))
+	}
+	pgDatabase, ok := os.LookupEnv("PG_DATABASE")
+	if !ok {
+		panic(errors.New("PG_DATABASE is empty"))
+	}
+
+	dbConfig := postgres.Config{
+		pgUser,
+		pgPassword,
+		pgDatabase,
+		pgHost,
+	}
+	db := postgres.Run(dbConfig)
+	defer db.Close()
+
+	queries := dbs.New(db)
+
+	ItemApiService := openapi.NewItemApiService(queries)
 	ItemApiController := openapi.NewItemApiController(ItemApiService)
 
-	ItemsApiService := openapi.NewItemsApiService()
+	ItemsApiService := openapi.NewItemsApiService(queries)
 	ItemsApiController := openapi.NewItemsApiController(ItemsApiService)
 
 	router := openapi.NewRouter(ItemApiController, ItemsApiController)

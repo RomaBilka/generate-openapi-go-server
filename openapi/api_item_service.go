@@ -11,19 +11,22 @@ package openapi
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
+
+	"github.com/RomaBiliak/generate-openapi-go-server/database/dbs"
 )
 
 // ItemApiService is a service that implements the logic for the ItemApiServicer
 // This service should implement the business logic for every endpoint for the ItemApi API.
 // Include any external packages or services that will be required by this service.
 type ItemApiService struct {
+	queries *dbs.Queries
 }
 
 // NewItemApiService creates a default api service
-func NewItemApiService() ItemApiServicer {
-	return &ItemApiService{}
+func NewItemApiService(queries *dbs.Queries) ItemApiServicer {
+	return &ItemApiService{queries: queries}
 }
 
 // ItemIdDelete - Deletes the item
