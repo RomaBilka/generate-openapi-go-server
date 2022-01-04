@@ -214,8 +214,7 @@
           },
           "value": {
             "description": "Value item",
-            "type": "integer",
-            "format": "int64"
+            "type": "string"
           }
         }
       },
@@ -230,8 +229,7 @@
             "type": "string"
           },
           "value": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string"
           }
         }
       }

@@ -141,8 +141,7 @@ components:
           type: "string"
         value:
           description: "Value item"
-          type: "integer"
-          format: "int64"
+          type: "string"
     Item:
       type: object
       properties:
@@ -152,5 +151,4 @@ components:
         name:
           type: string
         value:
-          type: "integer"
-          format: "int64"
+          type: "string"

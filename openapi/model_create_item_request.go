@@ -15,7 +15,7 @@ type CreateItemRequest struct {
 	Name string `json:"name,omitempty"`
 
 	// Value item
-	Value int64 `json:"value,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 // AssertCreateItemRequestRequired checks if the required fields are not zero-ed

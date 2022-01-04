@@ -3,6 +3,10 @@ INSERT INTO items (name, value)
 VALUES (@name, @value)
 RETURNING id;
 
+-- name: UpdateItem :exec
+UPDATE items SET name = @name, value = @value
+WHERE id = @id;
+
 -- name: GetItemById :one
 SELECT *
 FROM items

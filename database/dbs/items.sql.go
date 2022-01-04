@@ -101,3 +101,19 @@ func (q *Queries) GetItems(ctx context.Context) ([]Item, error) {
 	}
 	return items, nil
 }
+
+const updateItem = `-- name: UpdateItem :exec
+UPDATE items SET name = $1, value = $2
+WHERE id = $3
+`
+
+type UpdateItemParams struct {
+	Name  string
+	Value string
+	ID    int32
+}
+
+func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
+	_, err := q.db.ExecContext(ctx, updateItem, arg.Name, arg.Value, arg.ID)
+	return err
+}

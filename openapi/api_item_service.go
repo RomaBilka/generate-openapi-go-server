@@ -11,6 +11,7 @@ package openapi
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 
@@ -31,62 +32,77 @@ func NewItemApiService(queries *dbs.Queries) ItemApiServicer {
 
 // ItemIdDelete - Deletes the item
 func (s *ItemApiService) ItemIdDelete(ctx context.Context, id int64) (ImplResponse, error) {
-	// TODO - update ItemIdDelete with the required logic for this service method.
-	// Add api_item_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	err := s.queries.DeleteItem(ctx, int32(id))
 
-	//TODO: Uncomment the next line to return response Response(400, {}) or use other options such as http.Ok ...
-	//return Response(400, nil),nil
+	if err != nil {
+		return Response(http.StatusBadRequest, nil), err
+	}
 
-	//TODO: Uncomment the next line to return response Response(204, {}) or use other options such as http.Ok ...
-	//return Response(204, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("ItemIdDelete method not implemented")
+	return Response(http.StatusNoContent, nil), nil
 }
 
 // ItemIdGet - Find item by ID
 func (s *ItemApiService) ItemIdGet(ctx context.Context, id int64) (ImplResponse, error) {
-	// TODO - update ItemIdGet with the required logic for this service method.
-	// Add api_item_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	item, err := s.queries.GetItemById(ctx, int32(id))
 
-	//TODO: Uncomment the next line to return response Response(200, []Item{}) or use other options such as http.Ok ...
-	//return Response(200, []Item{}), nil
+	if err != nil {
+		return Response(http.StatusBadRequest, nil), err
+	}
 
-	//TODO: Uncomment the next line to return response Response(400, {}) or use other options such as http.Ok ...
-	//return Response(400, nil),nil
+	if item.ID == 0 {
+		return Response(http.StatusNotFound, nil), nil
+	}
 
-	//TODO: Uncomment the next line to return response Response(404, {}) or use other options such as http.Ok ...
-	//return Response(404, nil),nil
-
-	return Response(http.StatusNotImplemented, nil), errors.New("ItemIdGet method not implemented")
+	return Response(http.StatusOK, item), nil
 }
 
 // ItemIdPut - Updates a item in the store with data
 func (s *ItemApiService) ItemIdPut(ctx context.Context, id int64, createItemRequest CreateItemRequest) (ImplResponse, error) {
-	// TODO - update ItemIdPut with the required logic for this service method.
-	// Add api_item_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
-	//TODO: Uncomment the next line to return response Response(202, []Item{}) or use other options such as http.Ok ...
-	//return Response(202, []Item{}), nil
+	item, err := s.queries.GetItemById(ctx, int32(id))
 
-	//TODO: Uncomment the next line to return response Response(400, {}) or use other options such as http.Ok ...
-	//return Response(400, nil),nil
+	if err != nil {
+		return Response(http.StatusBadRequest, nil), err
+	}
 
-	//TODO: Uncomment the next line to return response Response(404, {}) or use other options such as http.Ok ...
-	//return Response(404, nil),nil
+	if item.ID == 0 {
+		return Response(http.StatusNotFound, nil), nil
+	}
 
-	return Response(http.StatusNotImplemented, nil), errors.New("ItemIdPut method not implemented")
+	idInDb, err := s.queries.CheckItemExists(ctx, createItemRequest.Name)
+	if err != nil {
+		return Response(http.StatusBadRequest, nil), err
+	}
+
+	if idInDb != int32(id) {
+		return Response(http.StatusBadRequest, nil), errors.New("Item with that name already exists")
+	}
+
+	err = s.queries.UpdateItem(ctx, dbs.UpdateItemParams{createItemRequest.Name, createItemRequest.Value, int32(id)})
+
+	if err != nil {
+		return Response(http.StatusAccepted, nil), err
+	}
+
+	return Response(http.StatusBadRequest, nil), err
 }
 
 // ItemPost - Create a item in the store with data
 func (s *ItemApiService) ItemPost(ctx context.Context, createItemRequest CreateItemRequest) (ImplResponse, error) {
-	// TODO - update ItemPost with the required logic for this service method.
-	// Add api_item_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	id, err := s.queries.CheckItemExists(ctx, createItemRequest.Name)
+	if err != nil && err != sql.ErrNoRows {
+		return Response(http.StatusBadRequest, nil), err
+	}
 
-	//TODO: Uncomment the next line to return response Response(201, []Item{}) or use other options such as http.Ok ...
-	//return Response(201, []Item{}), nil
+	if id > 0 {
+		return Response(http.StatusBadRequest, nil), errors.New("Item with that name already exists")
+	}
 
-	//TODO: Uncomment the next line to return response Response(400, {}) or use other options such as http.Ok ...
-	//return Response(400, nil),nil
+	id, err = s.queries.CreateItem(ctx, dbs.CreateItemParams{createItemRequest.Name, createItemRequest.Value})
 
-	return Response(http.StatusNotImplemented, nil), errors.New("ItemPost method not implemented")
+	if err != nil {
+		return Response(http.StatusBadRequest, nil), err
+	}
+
+	return Response(http.StatusCreated, id), nil
 }
