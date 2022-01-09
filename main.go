@@ -15,11 +15,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/joho/godotenv"
-
-	"github.com/RomaBiliak/generate-openapi-go-server/database/dbs"
 	"github.com/RomaBiliak/generate-openapi-go-server/openapi"
 	"github.com/RomaBiliak/generate-openapi-go-server/pkg/database/postgres"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -53,13 +51,8 @@ func main() {
 	db := postgres.Run(dbConfig)
 	defer db.Close()
 
-	queries := dbs.New(db)
-
-	ItemApiService := openapi.NewItemApiService(queries)
-	ItemApiController := openapi.NewItemApiController(ItemApiService)
-
-	ItemsApiService := openapi.NewItemsApiService(queries)
-	ItemsApiController := openapi.NewItemsApiController(ItemsApiService)
+	ItemApiController := InitializeItemApiController(db)
+	ItemsApiController := InitializeItemsApiController(db)
 
 	router := openapi.NewRouter(ItemApiController, ItemsApiController)
 
